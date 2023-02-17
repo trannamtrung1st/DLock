@@ -1,0 +1,99 @@
+version: "3.8"
+
+services:
+  client:
+    image: trannamtrung1st/dlock:dl-client-1.0
+    ports:
+      - target: 80
+        published: 80
+
+  booking-api-1:
+    image: trannamtrung1st/dlock:booking-api-1.0
+    environment:
+      - SHOULD_INIT=1
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - FieldApiBaseUrl=http://field-api
+      - RedisEndpoints__0=redis
+      - RedisEndpoints__1=redis-1
+      - RedisEndpoints__2=redis-2
+      - RedisEndpoints__3=redis-3
+      - RedisEndpoints__4=redis-4
+    depends_on:
+      - database
+
+  booking-api-2:
+    image: trannamtrung1st/dlock:booking-api-1.0
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - FieldApiBaseUrl=http://field-api
+      - RedisEndpoints__0=redis
+      - RedisEndpoints__1=redis-1
+      - RedisEndpoints__2=redis-2
+      - RedisEndpoints__3=redis-3
+      - RedisEndpoints__4=redis-4
+    depends_on:
+      - database
+
+  field-api:
+    image: trannamtrung1st/dlock:field-api-1.0
+    ports:
+      - target: 80
+        published: 8010
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__FieldContext=Server=database;Database=DLock_Field;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - RedisEndpoints__0=redis
+      - RedisEndpoints__1=redis-1
+      - RedisEndpoints__2=redis-2
+      - RedisEndpoints__3=redis-3
+      - RedisEndpoints__4=redis-4
+    depends_on:
+      - database
+
+  identity-api:
+    image: trannamtrung1st/dlock:identity-api-1.0
+    ports:
+      - target: 80
+        published: 8020
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__IdentityContext=Server=database;Database=DLock_Identity;Trusted_Connection=False;User Id=sa;Password=z@123456!
+    depends_on:
+      - database
+
+  booking-proxy:
+    image: trannamtrung1st/dlock:booking-proxy-1.0
+    ports:
+      - target: 80
+        published: 8030
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ReverseProxy__Clusters__Booking__Destinations__Base_Server1__Address=http://booking-api-1
+      - ReverseProxy__Clusters__Booking__Destinations__Base_Server2__Address=http://booking-api-2
+    depends_on:
+      - database
+
+  database:
+    image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=z@123456!
+      - MSSQL_PID=Express
+
+  redis-1:
+    &redis-template
+    image: redis:7.0.8-alpine
+  redis-2:
+    <<: *redis-template
+  redis-3:
+    <<: *redis-template
+  redis-4:
+    <<: *redis-template
+  redis:
+    <<: *redis-template
+
+networks:
+  default:
+    name: dlock-shared-network
