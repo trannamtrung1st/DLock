@@ -1,3 +1,3 @@
 # DLock (No lock version)
 
-Please switch to branch `final` for running instruction
+Please switch to branch `master` for running instruction
