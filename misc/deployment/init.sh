@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ssh trungtran@20.127.23.214
-
 sudo apt-get update
 
 sudo apt-get install \
@@ -21,7 +19,7 @@ sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-git clone https://github.com/trannamtrung1st/DLock.git -b final
+git clone https://github.com/trannamtrung1st/DLock.git
 
 cd DLock
 
