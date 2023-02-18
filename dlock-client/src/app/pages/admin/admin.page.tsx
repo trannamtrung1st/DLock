@@ -159,7 +159,8 @@ const AdminPage = () => {
             <Row gutter={[16, 16]}>
               <Col><Button onClick={onChangeLockService('No lock')} type="primary">Disable lock</Button></Col>
               <Col><Button onClick={onChangeLockService('Local lock')} type="primary">Use local lock</Button></Col>
-              <Col><Button onClick={onChangeLockService('Distributed lock')} type="primary">Use distributed lock</Button></Col>
+              <Col><Button onClick={onChangeLockService('Redis lock')} type="primary">Use Redis lock</Button></Col>
+              <Col><Button onClick={onChangeLockService('Red lock')} type="primary">Use Red lock</Button></Col>
             </Row>
             <Row gutter={[16, 16]}>
               <Col><Button onClick={onResetBookingData} danger type="primary">Reset booking data</Button></Col>

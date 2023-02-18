@@ -21,7 +21,8 @@ services.AddEndpointsApiExplorer()
 
 services.AddScoped<IFieldService, FieldService>()
     .AddSingleton<ILockManager, LockManager>()
-    .AddSingleton<DistributedLockService>();
+    .AddSingleton<SingleRedisLockService>()
+    .AddSingleton<RedLockService>();
 
 var app = builder.Build();
 
@@ -31,11 +32,11 @@ using (var initScope = app.Services.CreateScope())
 
     var dbContext = provider.GetRequiredService<FieldContext>();
     var lockManager = provider.GetRequiredService<ILockManager>();
-    var distributedLockService = provider.GetRequiredService<DistributedLockService>();
+    var redLockService = provider.GetRequiredService<RedLockService>();
 
     await dbContext.Database.MigrateAsync();
 
-    await ResetData(dbContext, lockManager, distributedLockService);
+    await ResetData(dbContext, lockManager, redLockService);
 }
 
 // Configure the HTTP request pipeline.
@@ -103,7 +104,7 @@ app.MapPut("api/fields/maintenance/{value}", async (
 app.MapPost("api/restart", async (
     [FromServices] FieldContext context,
     [FromServices] ILockManager lockManager,
-    [FromServices] DistributedLockService distributedLockService) =>
+    [FromServices] RedLockService distributedLockService) =>
 {
     await ResetData(context, lockManager, distributedLockService);
 
@@ -125,11 +126,11 @@ app.Run();
 
 static async Task ResetData(FieldContext dbContext,
     ILockManager lockManager,
-    DistributedLockService distributedLockService)
+    RedLockService redLockService)
 {
     lockManager.Reset();
 
-    await distributedLockService.ResetData();
+    await redLockService.ResetData();
 
     await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE [Field] SET IsUnderMaintenance = 1, MaintenanceTime = NULL");
 }

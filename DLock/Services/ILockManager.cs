@@ -13,13 +13,16 @@ namespace DLock.Services
     {
         private ILockService _lockService;
         private readonly IConfiguration _configuration;
-        private readonly DistributedLockService _distributedLockService;
+        private readonly RedLockService _redLockService;
+        private readonly SingleRedisLockService _redisLockService;
 
         public LockManager(IConfiguration configuration,
-            DistributedLockService distributedLockService)
+            RedLockService redLockService,
+            SingleRedisLockService redisLockService)
         {
             _configuration = configuration;
-            _distributedLockService = distributedLockService;
+            _redLockService = redLockService;
+            _redisLockService = redisLockService;
 
             Reset();
         }
@@ -43,9 +46,14 @@ namespace DLock.Services
                         _lockService = new LocalLockService(_configuration);
                         break;
                     }
-                case DistributedLockService.Name:
+                case SingleRedisLockService.Name:
                     {
-                        _lockService = _distributedLockService;
+                        _lockService = _redisLockService;
+                        break;
+                    }
+                case RedLockService.Name:
+                    {
+                        _lockService = _redLockService;
                         break;
                     }
             }

@@ -29,7 +29,7 @@ namespace DLock.Services
                 return Task.CompletedTask;
             }));
 
-            var acquired = await lockObj.WaitAsync(_configuration.GetValue<int>("LockWaitTime"));
+            var acquired = await lockObj.WaitAsync(_configuration.GetValue<int>("LockWaitTimeMs"));
 
             return acquired ? lockObj : null;
         }

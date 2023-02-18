@@ -7,18 +7,18 @@ using StackExchange.Redis;
 
 namespace DLock.Services
 {
-    public class DistributedLockService : ILockService, IDisposable
+    public class RedLockService : ILockService, IDisposable
     {
         private readonly IConfiguration _configuration;
         private RedLockFactory _redLockFactory;
         private IEnumerable<ConnectionMultiplexer> _multiplexers;
 
-        public DistributedLockService(IConfiguration configuration)
+        public RedLockService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        public const string Name = "Distributed lock";
+        public const string Name = "Red lock";
         public string ServiceName => Name;
 
         public async Task<ILock> AcquireLock(string key)
@@ -26,9 +26,9 @@ namespace DLock.Services
             var factory = Initialize();
 
             var redLock = await factory.CreateLockAsync(key,
-                expiryTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockExpirySecs")),
-                waitTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockWaitTime")),
-                retryTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockRetrySecs")));
+                expiryTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockExpiryMs")),
+                waitTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockWaitTimeMs")),
+                retryTime: TimeSpan.FromMilliseconds(_configuration.GetValue<int>("LockRetryMs")));
 
             return redLock.IsAcquired ? new DistributedLock(redLock) : null;
         }
@@ -70,7 +70,7 @@ namespace DLock.Services
         }
     }
 
-    public class DistributedLock : ILock, IDisposable
+    class DistributedLock : ILock, IDisposable
     {
         private readonly IRedLock _redLock;
 

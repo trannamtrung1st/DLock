@@ -27,7 +27,8 @@ services.AddHttpClient("FieldApi", client =>
 
 services.AddScoped<IBookingService, BookingService>()
     .AddSingleton<ILockManager, LockManager>()
-    .AddSingleton<DistributedLockService>();
+    .AddSingleton<SingleRedisLockService>()
+    .AddSingleton<RedLockService>();
 
 var app = builder.Build();
 
@@ -39,11 +40,11 @@ if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SHOUL
 
         var dbContext = provider.GetRequiredService<BookingContext>();
         var lockManager = provider.GetRequiredService<ILockManager>();
-        var distributedLockService = provider.GetRequiredService<DistributedLockService>();
+        var redLockService = provider.GetRequiredService<RedLockService>();
 
         await dbContext.Database.MigrateAsync();
 
-        await ResetData(dbContext, lockManager, distributedLockService);
+        await ResetData(dbContext, lockManager, redLockService);
     }
 }
 
@@ -166,7 +167,7 @@ app.MapPost("api/bookings", async (
 app.MapPost("api/restart", async (
     [FromServices] BookingContext context,
     [FromServices] ILockManager lockManager,
-    [FromServices] DistributedLockService distributedLockService) =>
+    [FromServices] RedLockService distributedLockService) =>
 {
     await ResetData(context, lockManager, distributedLockService);
 
@@ -188,11 +189,11 @@ app.Run();
 
 static async Task ResetData(BookingContext dbContext,
     ILockManager lockManager,
-    DistributedLockService distributedLockService)
+    RedLockService redLockService)
 {
     lockManager.Reset();
 
-    await distributedLockService.ResetData();
+    await redLockService.ResetData();
 
     await dbContext.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM Booking");
 }
