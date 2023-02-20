@@ -93,6 +93,9 @@ services:
     <<: *redis-template
   redis:
     <<: *redis-template
+    ports:
+      - target: 6379
+        published: 6379
 
 networks:
   default:
