@@ -1,17 +1,13 @@
 import { Card, Col, Row, Typography } from 'antd';
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import AppSpin from '@shared/components/app-spin';
 
 const { Paragraph } = Typography;
 
-const homeCardStyle: CSSProperties = {
-  marginBottom: 16
-};
-
 const HomePage = () => {
 
   return (
-    <Card style={homeCardStyle} title={
+    <Card title={
       <Row align="middle">
         <Col flex="none">Welcome to DLock</Col>
       </Row>

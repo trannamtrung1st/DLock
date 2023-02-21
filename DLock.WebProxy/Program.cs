@@ -1,6 +1,8 @@
+using DLock.Models;
 using DLock.Services;
 using DLock.Utils;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +31,29 @@ using (var initScope = app.Services.CreateScope())
 }
 
 app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
+app.MapPost("sharing", (
+    [FromBody] string data,
+    [FromServices] ConnectionMultiplexer connection) =>
+{
+    var db = connection.GetDatabase();
+
+    db.StringSet("dlock-sharing", data);
+
+    return Results.NoContent();
+});
+
+app.MapGet("sharing", ([FromServices] ConnectionMultiplexer connection) =>
+{
+    var db = connection.GetDatabase();
+
+    var sharingData = (string)db.StringGet("dlock-sharing");
+
+    return Results.Ok(new ApiResponse
+    {
+        Data = sharingData,
+    });
+});
 
 app.Map("config/{configName}", (
     [FromRoute] string configName,

@@ -10,6 +10,7 @@ import LoginPage from "@app/pages/login";
 import HomePage from "@app/pages/home";
 import BookingPage from "@app/pages/booking";
 import AdminPage from "@app/pages/admin";
+import SharingPage from "@app/pages/sharing";
 
 const mainModule: RouteObject = {
   element: (
@@ -34,6 +35,10 @@ const mainModule: RouteObject = {
         {
           path: 'booking',
           element: <BookingPage />
+        },
+        {
+          path: 'sharing',
+          element: <SharingPage />
         },
         {
           path: 'admin',

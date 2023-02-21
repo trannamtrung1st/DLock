@@ -31,6 +31,7 @@ const AppLayout = () => {
     const items = [
       buildSideMenuItem(routeMap.home),
       buildSideMenuItem(routeMap.booking),
+      buildSideMenuItem(routeMap.sharing)
     ];
     if (userName && isAdmin(userName)) {
       items.push(buildSideMenuItem(routeMap.admin));

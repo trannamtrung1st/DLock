@@ -6,8 +6,9 @@ import { MenuInfo } from 'rc-menu/lib/interface';
 import { Link } from 'react-router-dom';
 import {
   HomeOutlined,
-  BookOutlined,
-  SettingOutlined
+  CalendarOutlined,
+  SettingOutlined,
+  FileOutlined
 } from '@ant-design/icons';
 import { RouteSideMenu } from '@shared/types/route-side-menu.type';
 import { RouteInfo } from '@shared/types/route-info.type';
@@ -18,7 +19,10 @@ const getSideMenuInfo = (routeLink: string): RouteSideMenu | undefined => {
       sideMenuIcon: <HomeOutlined />,
     }
     case routeMap.booking.link: return {
-      sideMenuIcon: <BookOutlined />,
+      sideMenuIcon: <CalendarOutlined />,
+    }
+    case routeMap.sharing.link: return {
+      sideMenuIcon: <FileOutlined />,
     }
     case routeMap.admin.link: return {
       sideMenuIcon: <SettingOutlined />,

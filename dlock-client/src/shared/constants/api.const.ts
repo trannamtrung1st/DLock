@@ -20,6 +20,8 @@ const apiUrl = {
   resetIdentityData: 'api/restart',
   changeProxyConfig: 'config/:configName',
   changeLockService: 'lock/:serviceName',
+  pushSharing: 'sharing',
+  getSharing: 'sharing'
 };
 
 export {

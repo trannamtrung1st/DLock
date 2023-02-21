@@ -4,6 +4,7 @@ export const routeMap: {
   root: RouteInfo,
   home: RouteInfo,
   booking: RouteInfo,
+  sharing: RouteInfo,
   admin: RouteInfo,
   login: RouteInfo
 } = {
@@ -17,6 +18,10 @@ export const routeMap: {
   booking: {
     link: '/booking',
     title: 'Booking'
+  },
+  sharing: {
+    link: '/sharing',
+    title: 'Sharing'
   },
   admin: {
     link: '/admin',
