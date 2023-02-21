@@ -9,4 +9,8 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="2.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DLock\DLock.csproj" />
+  </ItemGroup>
+
 </Project>

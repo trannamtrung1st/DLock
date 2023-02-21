@@ -1,17 +1,19 @@
-﻿using DLock.Utils;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 
 namespace DLock.Services
 {
-    public class SingleRedisLockService : ILockService, IDisposable
+    public class SingleRedisLockService : ILockService
     {
         private readonly IConfiguration _configuration;
         private ConnectionMultiplexer _multiplexer;
 
-        public SingleRedisLockService(IConfiguration configuration)
+        public SingleRedisLockService(
+            IConfiguration configuration,
+            ConnectionMultiplexer multiplexer)
         {
             _configuration = configuration;
+            _multiplexer = multiplexer;
         }
 
         public const string Name = "Redis lock";
@@ -19,8 +21,6 @@ namespace DLock.Services
 
         public async Task<ILock> AcquireLock(string key)
         {
-            Initialize();
-
             var db = _multiplexer.GetDatabase();
 
             // Equivalent command: SET resource_name a_random_value NX PX {Milliseconds}
@@ -32,23 +32,6 @@ namespace DLock.Services
                 when: When.NotExists);
 
             return acquired ? new SingleRedisLock(finalKey, randomVal, _multiplexer) : null;
-        }
-
-        private void Initialize()
-        {
-            if (_multiplexer == null)
-            {
-                var endpoints = _configuration.GetSection("RedisEndpoints").Get<IEnumerable<string>>();
-                _multiplexer = RedisHelper.GetConnectionMultiplexer(endpoints.First());
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_multiplexer != null)
-            {
-                _multiplexer.Dispose();
-            }
         }
     }
 

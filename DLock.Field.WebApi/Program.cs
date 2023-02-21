@@ -2,6 +2,7 @@ using DLock.Field.WebApi.Persistence;
 using DLock.Field.WebApi.Services;
 using DLock.Models;
 using DLock.Services;
+using DLock.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ var configuration = builder.Configuration;
 services.AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddCors()
+    .AddRedisConnection(configuration)
     .AddDbContext<FieldContext>(opt =>
     {
         opt.UseSqlServer(configuration.GetConnectionString(nameof(FieldContext)));
@@ -31,12 +33,10 @@ using (var initScope = app.Services.CreateScope())
     var provider = initScope.ServiceProvider;
 
     var dbContext = provider.GetRequiredService<FieldContext>();
-    var lockManager = provider.GetRequiredService<ILockManager>();
-    var redLockService = provider.GetRequiredService<RedLockService>();
 
     await dbContext.Database.MigrateAsync();
 
-    await ResetData(dbContext, lockManager, redLockService);
+    await ResetData(dbContext);
 }
 
 // Configure the HTTP request pipeline.
@@ -102,20 +102,9 @@ app.MapPut("api/fields/maintenance/{value}", async (
 });
 
 app.MapPost("api/restart", async (
-    [FromServices] FieldContext context,
-    [FromServices] ILockManager lockManager,
-    [FromServices] RedLockService distributedLockService) =>
+    [FromServices] FieldContext context) =>
 {
-    await ResetData(context, lockManager, distributedLockService);
-
-    return Results.NoContent();
-});
-
-app.MapPut("lock/{serviceName}", (
-    [FromRoute] string serviceName,
-    [FromServices] ILockManager lockManager) =>
-{
-    lockManager.SetLockService(serviceName);
+    await ResetData(context);
 
     return Results.NoContent();
 });
@@ -124,13 +113,7 @@ app.MapPut("lock/{serviceName}", (
 
 app.Run();
 
-static async Task ResetData(FieldContext dbContext,
-    ILockManager lockManager,
-    RedLockService redLockService)
+static async Task ResetData(FieldContext dbContext)
 {
-    lockManager.Reset();
-
-    await redLockService.ResetData();
-
     await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE [Field] SET IsUnderMaintenance = 1, MaintenanceTime = NULL");
 }

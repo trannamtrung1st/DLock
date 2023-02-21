@@ -1,14 +1,32 @@
+using DLock.Services;
+using DLock.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
+var configuration = builder.Configuration;
 
 services
     .AddCors()
+    .AddRedisConnection(configuration)
     .SetupReverseProxy(builder.Configuration);
 
+services
+    .AddSingleton<ILockManager, LockManager>()
+    .AddSingleton<SingleRedisLockService>()
+    .AddSingleton<RedLockService>();
+
 var app = builder.Build();
+
+using (var initScope = app.Services.CreateScope())
+{
+    var provider = initScope.ServiceProvider;
+
+    var redLockService = provider.GetRequiredService<RedLockService>();
+
+    await ResetData(redLockService);
+}
 
 app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
@@ -22,9 +40,23 @@ app.Map("config/{configName}", (
     return Results.NoContent();
 });
 
+app.MapPut("lock/{serviceName}", (
+    [FromRoute] string serviceName,
+    [FromServices] ILockManager lockManager) =>
+{
+    lockManager.SetLockService(serviceName);
+
+    return Results.NoContent();
+});
+
 app.MapReverseProxy();
 
 app.Run();
+
+static async Task ResetData(RedLockService redLockService)
+{
+    await redLockService.ResetData();
+}
 
 class ProxyConfig
 {

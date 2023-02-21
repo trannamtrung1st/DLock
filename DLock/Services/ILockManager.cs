@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 
 namespace DLock.Services
 {
@@ -6,62 +7,63 @@ namespace DLock.Services
     {
         ILockService GetLockService();
         void SetLockService(string serviceName);
-        void Reset();
     }
 
     public class LockManager : ILockManager
     {
-        private ILockService _lockService;
+        const string LockServiceKey = "dlock-lockservice";
+
         private readonly IConfiguration _configuration;
+        private readonly ConnectionMultiplexer _multiplexer;
+        private readonly NullLockService _nullLockService;
+        private readonly LocalLockService _localLockService;
         private readonly RedLockService _redLockService;
         private readonly SingleRedisLockService _redisLockService;
 
         public LockManager(IConfiguration configuration,
+            ConnectionMultiplexer multiplexer,
             RedLockService redLockService,
             SingleRedisLockService redisLockService)
         {
             _configuration = configuration;
+            _multiplexer = multiplexer;
+            _nullLockService = new NullLockService();
+            _localLockService = new LocalLockService(configuration);
             _redLockService = redLockService;
             _redisLockService = redisLockService;
-
-            Reset();
         }
 
         public ILockService GetLockService()
         {
-            return _lockService;
-        }
+            var db = _multiplexer.GetDatabase();
+            var serviceName = db.StringGet(LockServiceKey);
 
-        public void SetLockService(string serviceName)
-        {
             switch (serviceName)
             {
-                case NullLockService.Name:
-                    {
-                        _lockService = new NullLockService();
-                        break;
-                    }
                 case LocalLockService.Name:
                     {
-                        _lockService = new LocalLockService(_configuration);
-                        break;
+                        return _localLockService;
                     }
                 case SingleRedisLockService.Name:
                     {
-                        _lockService = _redisLockService;
-                        break;
+                        return _redisLockService;
                     }
                 case RedLockService.Name:
                     {
-                        _lockService = _redLockService;
-                        break;
+                        return _redLockService;
+                    }
+                default:
+                    {
+                        return _nullLockService;
                     }
             }
         }
 
-        public void Reset()
+        public void SetLockService(string serviceName)
         {
-            _lockService = new NullLockService();
+            var db = _multiplexer.GetDatabase();
+
+            db.StringSet(LockServiceKey, serviceName);
         }
     }
 }

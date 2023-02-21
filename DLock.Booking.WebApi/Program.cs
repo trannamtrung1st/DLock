@@ -3,6 +3,7 @@ using DLock.Booking.WebApi.Persistence;
 using DLock.Booking.WebApi.Services;
 using DLock.Models;
 using DLock.Services;
+using DLock.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ var configuration = builder.Configuration;
 services.AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddCors()
+    .AddRedisConnection(configuration)
     .AddDbContext<BookingContext>(opt =>
     {
         opt.UseSqlServer(configuration.GetConnectionString(nameof(BookingContext)));
@@ -39,12 +41,10 @@ if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SHOUL
         var provider = initScope.ServiceProvider;
 
         var dbContext = provider.GetRequiredService<BookingContext>();
-        var lockManager = provider.GetRequiredService<ILockManager>();
-        var redLockService = provider.GetRequiredService<RedLockService>();
 
         await dbContext.Database.MigrateAsync();
 
-        await ResetData(dbContext, lockManager, redLockService);
+        await ResetData(dbContext);
     }
 }
 
@@ -165,20 +165,9 @@ app.MapPost("api/bookings", async (
 });
 
 app.MapPost("api/restart", async (
-    [FromServices] BookingContext context,
-    [FromServices] ILockManager lockManager,
-    [FromServices] RedLockService distributedLockService) =>
+    [FromServices] BookingContext context) =>
 {
-    await ResetData(context, lockManager, distributedLockService);
-
-    return Results.NoContent();
-});
-
-app.MapPut("lock/{serviceName}", (
-    [FromRoute] string serviceName,
-    [FromServices] ILockManager lockManager) =>
-{
-    lockManager.SetLockService(serviceName);
+    await ResetData(context);
 
     return Results.NoContent();
 });
@@ -187,14 +176,8 @@ app.MapPut("lock/{serviceName}", (
 
 app.Run();
 
-static async Task ResetData(BookingContext dbContext,
-    ILockManager lockManager,
-    RedLockService redLockService)
+static async Task ResetData(BookingContext dbContext)
 {
-    lockManager.Reset();
-
-    await redLockService.ResetData();
-
     await dbContext.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM Booking");
 }
 
