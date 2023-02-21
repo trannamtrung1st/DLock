@@ -21,6 +21,7 @@ services:
       - RedisEndpoints__4=redis-4
     depends_on:
       - database
+      - redis
 
   booking-api-2:
     image: trannamtrung1st/dlock:booking-api-1.0
@@ -35,6 +36,7 @@ services:
       - RedisEndpoints__4=redis-4
     depends_on:
       - database
+      - redis
 
   field-api:
     image: trannamtrung1st/dlock:field-api-1.0
@@ -51,6 +53,7 @@ services:
       - RedisEndpoints__4=redis-4
     depends_on:
       - database
+      - redis
 
   identity-api:
     image: trannamtrung1st/dlock:identity-api-1.0
@@ -79,6 +82,7 @@ services:
       - RedisEndpoints__4=redis-4
     depends_on:
       - database
+      - redis
 
   database:
     image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
