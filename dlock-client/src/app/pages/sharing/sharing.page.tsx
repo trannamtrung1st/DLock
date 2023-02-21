@@ -14,7 +14,7 @@ const SharingPage = () => {
 
   useEffect(() => {
     adminService.getSharing().then(result => {
-      if (result.response.ok && result.apiData?.data) {
+      if (result.response.ok) {
         form.setFieldValue('data', result.apiData?.data);
       } else {
         showErrorMessage(joinMessages(result.apiData?.messages))
