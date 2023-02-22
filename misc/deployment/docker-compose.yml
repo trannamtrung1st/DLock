@@ -12,7 +12,7 @@ services:
     environment:
       - SHOULD_INIT=1
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=zZz@123456!
       - FieldApiBaseUrl=http://field-api
       - RedisEndpoints__0=redis
       - RedisEndpoints__1=redis-1
@@ -27,7 +27,7 @@ services:
     image: trannamtrung1st/dlock:booking-api-1.0
     environment:
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - ConnectionStrings__BookingContext=Server=database;Database=DLock_Booking;Trusted_Connection=False;User Id=sa;Password=zZz@123456!
       - FieldApiBaseUrl=http://field-api
       - RedisEndpoints__0=redis
       - RedisEndpoints__1=redis-1
@@ -45,7 +45,7 @@ services:
         published: 8010
     environment:
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__FieldContext=Server=database;Database=DLock_Field;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - ConnectionStrings__FieldContext=Server=database;Database=DLock_Field;Trusted_Connection=False;User Id=sa;Password=zZz@123456!
       - RedisEndpoints__0=redis
       - RedisEndpoints__1=redis-1
       - RedisEndpoints__2=redis-2
@@ -62,7 +62,7 @@ services:
         published: 8020
     environment:
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__IdentityContext=Server=database;Database=DLock_Identity;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - ConnectionStrings__IdentityContext=Server=database;Database=DLock_Identity;Trusted_Connection=False;User Id=sa;Password=zZz@123456!
     depends_on:
       - database
 
@@ -75,7 +75,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ReverseProxy__Clusters__Booking__Destinations__Base_Server1__Address=http://booking-api-1
       - ReverseProxy__Clusters__Booking__Destinations__Base_Server2__Address=http://booking-api-2
-      - ConnectionStrings__Default=Server=database;Trusted_Connection=False;User Id=sa;Password=z@123456!
+      - ConnectionStrings__Default=Server=database;Trusted_Connection=False;User Id=sa;Password=zZz@123456!
       - RedisEndpoints__0=redis
       - RedisEndpoints__1=redis-1
       - RedisEndpoints__2=redis-2
@@ -89,7 +89,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=z@123456!
+      - SA_PASSWORD=zZz@123456!
       - MSSQL_PID=Express
     ports:
       - target: 1433
