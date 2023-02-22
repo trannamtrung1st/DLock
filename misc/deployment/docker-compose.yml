@@ -75,6 +75,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ReverseProxy__Clusters__Booking__Destinations__Base_Server1__Address=http://booking-api-1
       - ReverseProxy__Clusters__Booking__Destinations__Base_Server2__Address=http://booking-api-2
+      - ConnectionStrings__Default=Server=database;Trusted_Connection=False;User Id=sa;Password=z@123456!
       - RedisEndpoints__0=redis
       - RedisEndpoints__1=redis-1
       - RedisEndpoints__2=redis-2

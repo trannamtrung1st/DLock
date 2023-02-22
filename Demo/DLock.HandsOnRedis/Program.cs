@@ -10,7 +10,7 @@ namespace DLock.HandsOnRedis
     {
         const string MyKey = "SE130097";
         const string CachingKey = $"{MyKey}-cache";
-        const string ConnectionString = "Server=localhost,1434;Database=DLock_Demo;Trusted_Connection=False;User Id=readonly;Password=123456";
+        const string ConnectionString = "Server=localhost,1434;Database=DLock_HandsOn;Trusted_Connection=False;User Id=readonly;Password=123456";
 
         static void Main(string[] args)
         {

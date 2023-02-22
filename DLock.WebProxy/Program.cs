@@ -2,6 +2,7 @@ using DLock.Models;
 using DLock.Services;
 using DLock.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using StackExchange.Redis;
 using Yarp.ReverseProxy.Configuration;
 
@@ -26,8 +27,11 @@ using (var initScope = app.Services.CreateScope())
     var provider = initScope.ServiceProvider;
 
     var redLockService = provider.GetRequiredService<RedLockService>();
+    var multiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
 
     await ResetData(redLockService);
+
+    await InitializeDatabase(app.Configuration, multiplexer);
 }
 
 app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
@@ -81,6 +85,70 @@ app.Run();
 static async Task ResetData(RedLockService redLockService)
 {
     await redLockService.ResetData();
+}
+
+static async Task InitializeDatabase(
+    IConfiguration configuration,
+    ConnectionMultiplexer multiplexer)
+{
+    const string InitKey = "dlock-init";
+    var db = multiplexer.GetDatabase();
+
+    if (db.KeyExists(InitKey))
+    {
+        return;
+    }
+    else
+    {
+        db.StringSet(InitKey, 1);
+    }
+
+    var connStr = configuration.GetConnectionString("Default");
+
+    string createDbCmd = $@"
+USE [master]
+CREATE DATABASE [DLock_HandsOn];
+";
+
+    string createTableCmd = $@"
+USE [DLock_HandsOn];
+CREATE TABLE [Resources] (
+	Name nvarchar(256) PRIMARY KEY,
+	Value nvarchar(max) NOT NULL
+);
+";
+
+    string createLoginCmd = $@"
+CREATE LOGIN [readonly]  
+    WITH PASSWORD = '123456',
+	CHECK_POLICY = OFF;";
+
+    string createUserCmd = $@"CREATE USER [readonly] FOR LOGIN [readonly];";
+
+    string assignRoleCmd = $@"EXEC sp_addrolemember 'db_datareader', 'readonly';";
+
+    var listCmds = new[] { createDbCmd, createTableCmd, createLoginCmd, createUserCmd, assignRoleCmd };
+
+    using (SqlConnection connection = new SqlConnection(connStr))
+    {
+        SqlCommand command = new SqlCommand();
+        command.Connection = connection;
+        connection.Open();
+
+        foreach (var cmd in listCmds)
+        {
+            command.CommandText = cmd;
+            await command.ExecuteNonQueryAsync();
+        }
+
+        for (var i = 1; i <= 5; i++)
+        {
+            command.CommandText = @"INSERT INTO [Resources] VALUES(@Name, @Value);";
+            command.Parameters.AddWithValue("Name", $"Sample Key {i}");
+            command.Parameters.AddWithValue("Value", $"Sample Value {i}");
+            await command.ExecuteNonQueryAsync();
+        }
+    }
 }
 
 class ProxyConfig
