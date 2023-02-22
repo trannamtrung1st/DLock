@@ -91,6 +91,9 @@ services:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=z@123456!
       - MSSQL_PID=Express
+    ports:
+      - target: 1433
+        published: 1434
 
   redis-1:
     &redis-template
