@@ -144,6 +144,7 @@ CREATE LOGIN [readonly]
         for (var i = 1; i <= 5; i++)
         {
             command.CommandText = @"INSERT INTO [Resources] VALUES(@Name, @Value);";
+            command.Parameters.Clear();
             command.Parameters.AddWithValue("Name", $"Sample Key {i}");
             command.Parameters.AddWithValue("Value", $"Sample Value {i}");
             await command.ExecuteNonQueryAsync();
